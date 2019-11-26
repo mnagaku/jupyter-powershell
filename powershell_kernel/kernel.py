@@ -64,10 +64,17 @@ class PowerShellKernel(Kernel):
             self.proxy.send_input('. { ' + code + ' }')
             output = self.proxy.get_output()
 
+            self.proxy.send_input('. { $? }')
+            return_code = self.proxy.get_output()
+
+            status = 'error'
+            if 'True' in return_code:
+                status = 'ok'
+
             message = {'name': 'stdout', 'text': output}
             self.send_response(self.iopub_socket, 'stream', message)
 
-            return {'status': 'ok', 'execution_count': self.execution_count,
+            return {'status': status, 'execution_count': self.execution_count,
                     'payload': [], 'user_expressions': {}}
 
         except Exception:
